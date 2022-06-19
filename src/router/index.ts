@@ -1,17 +1,17 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-import FirstPart from '../views/PartOne.vue'
+import PartOne from '../views/PartOne.vue'
+import PartTwo from '../views/PartTwo.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'part1',
-    component: FirstPart
+    component: PartOne
   },
   {
     path: '/part2',
     name: 'part2',
-    // lazy-loaded when the route is visited for the first time
-    component: () => import('../views/PartTwo.vue')
+    component: PartTwo
   }
 ]
 

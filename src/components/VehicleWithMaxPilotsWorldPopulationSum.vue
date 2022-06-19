@@ -1,33 +1,31 @@
 <template>
-  <div>
-    <div class="centered">
-      <Loader />
-      <table v-if="vehicle" id="vehicle-table" border="2px">
-          <caption>Vehicle <b>name</b> with the highest <b>sum</b> of <b>population</b> for all its pilots’ home planets</caption>
-          <tbody>
-            <tr>
-              <td class="column-left">Vehicle name with the largest sum</td>
-              <td class="column-right">{{ vehicle.name }}<br />{{ vehicle.maxPilotPopulationSum }}</td>
-            </tr>
-            <tr>
-              <td class="column-left">Related home planets and their respective population</td>
-              <td class="column-right">
-                <ul>
-                  <li v-for="pilot in vehicle.pilots" v-bind:key="pilot.url">{{ pilot.planet.name }}, {{ pilot.planet.population }}</li>
-                </ul>
-              </td>
-            </tr>
-            <tr>
-              <td class="column-left">Related pilot names</td>
-              <td class="column-right">
-                <ul>
-                  <li v-for="pilot in vehicle.pilots" v-bind:key="pilot.url">{{ pilot.name }}</li>
-                </ul>
-              </td>
-            </tr>
-          </tbody>
-      </table>
-    </div>
+  <div class="centered bottom-space">
+    <Loader />
+    <table v-if="vehicle" id="vehicle-table" border="2px">
+      <caption>Vehicle with the highest sum of its pilots’ home planets population</caption>
+      <tbody>
+        <tr>
+          <td class="column-left">Vehicle name with the largest sum</td>
+          <td class="column-right">{{ vehicle.name }}<br />{{ vehicle.maxPilotPopulationSum }}</td>
+        </tr>
+        <tr>
+          <td class="column-left">Related home planets and their respective population</td>
+          <td class="column-right">
+            <ul>
+              <li v-for="pilot in vehicle.pilots" v-bind:key="pilot.url">{{ pilot.planet.name }}, {{ pilot.planet.population }}</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td class="column-left">Related pilot names</td>
+          <td class="column-right">
+            <ul>
+              <li v-for="pilot in vehicle.pilots" v-bind:key="pilot.url">{{ pilot.name }}</li>
+            </ul>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
@@ -55,6 +53,15 @@ export default defineComponent({
 <style scoped lang="scss">
 
 #vehicle-table {
+  caption {
+    caption-side: top; 
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    position: relative; 
+    font-weight: bold;
+    margin-bottom: 32px;
+    font-size: 14px;
+  }
   position: relative; 
   width: 600px; 
   height: 300px;
@@ -87,4 +94,8 @@ a {
   margin: 0 auto;
   width: 50%;
 }
+.bottom-space {
+  margin-bottom: 50px;
+}
+
 </style>

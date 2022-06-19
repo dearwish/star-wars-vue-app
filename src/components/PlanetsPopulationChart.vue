@@ -1,21 +1,19 @@
 <template>
-  <div>
-    <div class="centered">
-      <Loader />
-      <table v-if="planetsChart && planetsChart.length > 0" id="chart">
-        <caption>Home planets population chart</caption>
-        <tbody>
-          <template v-for="(planet, index) in planetsChart" v-bind:key="planet.url">
-            <tr :class="`col-${index + 1}`">
-              <th scope="row">{{ planet.name }}</th>
-              <td class="bar" :style="`height: ${planet.barHeight};`">
-                <p>{{ planet.population.toLocaleString() }}</p>
-              </td>
-            </tr>
-          </template>
-        </tbody>
-      </table>
-    </div>
+  <div class="centered bottom-space">
+    <Loader />
+    <table v-if="planetsChart && planetsChart.length > 0" id="chart">
+      <caption>Home planets population chart</caption>
+      <tbody>
+        <template v-for="(planet, index) in planetsChart" v-bind:key="planet.url">
+          <tr :class="`col-${index + 1}`">
+            <th scope="row">{{ planet.name }}</th>
+            <td class="bar" :style="`height: ${planet.barHeight + minBarSize}px;`">
+              <p>{{ planet.population.toLocaleString() }}</p>
+            </td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
   </div>
 </template>
 
@@ -23,18 +21,15 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { defineComponent } from 'vue';
 import { mapGetters } from 'vuex';
-import Planet from '@/types/Planet';
 import Loader from './Loader.vue';
 
 export default defineComponent({
     name: "home-planet-population-chart",
     data() {
       return {
-        planets: [] as Array<Planet>,
-        maxPopulation: 0 as number,
-        barHeights: [] as Array<string>,
-        maxBarSize: 300 as number,
-        minBarSize: 20 as number
+        maxBarSize: 500 as number,
+        minBarSize: 5 as number,
+        barStep: 10000000 as number
       };
     },
     components: { Loader },
@@ -45,7 +40,7 @@ export default defineComponent({
       this.$store.dispatch('findPlanetsByName', {
         planetNames: ["Tatooine", "Alderaan", "Naboo", "Bespin", "Endor"],
         maxBarSize: this.maxBarSize,
-        minBarSize: this.minBarSize
+        barStep: this.barStep
       });
     }
 });
@@ -59,7 +54,7 @@ $bar-color: #39cccc;
 #chart {
   position: relative; 
   width: 600px; 
-  height: 300px;
+  height: 500px;
   padding: 0;
   background: transparent;
   font-size: 11px;
@@ -72,7 +67,8 @@ $bar-color: #39cccc;
   letter-spacing: .5px;
   position: relative; 
   font-weight: bold;
-  margin-bottom: 32px;
+  margin-bottom: 10px;
+  font-size: 14px;
 }
 
 #chart tr, #chart th, #chart td { 
@@ -132,5 +128,9 @@ $step: 120;
 .centered {
   margin: 0 auto;
   width: 50%;
+}
+
+.bottom-space {
+  margin-bottom: 50px;
 }
 </style>

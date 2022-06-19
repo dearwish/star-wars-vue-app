@@ -8,7 +8,7 @@ import Utils from '@/utils';
 import { Commit, createStore } from 'vuex';
 
 interface PlanetChartItem extends Planet {
-  barHeight: string;
+  barHeight: number;
 }
 
 const loadRelatedData = async ({ commit, state }: { commit: Commit, state: AppState }, pilotUrl: string) => {
@@ -36,16 +36,12 @@ const mapPilot = ({ state }: { state: AppState }, pilotUrl: string): Pilot => {
   };
 };
 
-const calculateBarHeight = ({ state }: { state: AppState }, {population, maxBarSize, minBarSize}: {population: number, maxBarSize: number, minBarSize: number}): string => {
-  const populationPerPixel = state.maxPopulation / maxBarSize;
-  const barPixels = Math.round(population / populationPerPixel);
-  if (barPixels < minBarSize) {
-      return `${minBarSize}px`;
+const calculateBarHeight = ({population, maxBarSize, barStep}: {population: number, maxBarSize: number, barStep: number}): number => {
+  const barPixels = Math.round(population / barStep);
+  if (barPixels > maxBarSize) {
+      return maxBarSize;
   }
-  if (barPixels === maxBarSize) {
-      return `${maxBarSize}px`;
-  }
-  return Math.round(population / populationPerPixel) + "px";
+  return barPixels;
 };
 
 export interface AppState {
@@ -111,6 +107,9 @@ export default createStore({
         state.planetsChart = [];
       }
       state.planetsChart.push(planetChartItem);
+    },
+    clearPlanetsChart(state) {
+      state.planetsChart = undefined;
     }
   },
   actions: {
@@ -154,24 +153,28 @@ export default createStore({
         commit('hideLoader');
       }
     },
-    async findPlanetsByName({ commit, state }: { commit: Commit, state: AppState }, {planetNames, maxBarSize, minBarSize}: {planetNames: Array<string>, maxBarSize: number, minBarSize: number}) {
+    async findPlanetsByName({ commit, state }: { commit: Commit, state: AppState }, {planetNames, maxBarSize, barStep}: {planetNames: Array<string>, maxBarSize: number, minBarSize: number, barStep: number}) {
       let nextPageNumber = 1 as number;
       let hasNextPage = true as boolean;
+      commit('clearPlanetsChart');
       commit("showLoader");
-      while (hasNextPage) {
+      try {
+        while (hasNextPage) {
           const { results: planets, next } = await swapi.getPlanets(nextPageNumber);
           for (let i = 0; i < planets.length; i++) {
-              const planet = planets[i];
-              if (planetNames.includes(planet.name)) {
-                  commit("savePlanet", planet);
-              }
+            const planet = planets[i];
+            if (planetNames.includes(planet.name)) {
+                commit("savePlanet", planet);
+            }
           }
           hasNextPage = next != null;
           if (hasNextPage) {
-              nextPageNumber = Utils.getPageNumber(next);
+            nextPageNumber = Utils.getPageNumber(next);
           }
+        }
+      } finally {
+        commit("hideLoader");
       }
-      commit("hideLoader");
       commit('setMaxPopulation', Math.max(...planetNames.map(planetName => Number(state.planetsByName[planetName].population))));
       planetNames.forEach(planetName => {
         const {url, name, population: populationStr} = state.planetsByName[planetName];
@@ -180,7 +183,7 @@ export default createStore({
           url,
           name,
           population,
-          barHeight: calculateBarHeight({ state }, {population, maxBarSize, minBarSize})
+          barHeight: calculateBarHeight({population, maxBarSize, barStep})
         });
       });
     }
