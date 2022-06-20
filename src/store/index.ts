@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import swapi, { PilotData, PlanetData } from '@/services/swapi';
+import swapi, { PilotData, PlanetData, VehiclesResponse } from '@/services/swapi';
 import Pilot from '@/types/Pilot';
 import Planet from '@/types/Planet';
 import Vehicle from '@/types/Vehicle';
@@ -36,6 +36,15 @@ const mapPilot = ({ state }: { state: AppState }, pilotUrl: string): Pilot => {
   };
 };
 
+const getVehiclesPageCached = async ({ state, commit }: { state: AppState, commit: Commit }, pageNumber: number): Promise<VehiclesResponse> => {
+  if (state.vehiclesCache['vehicles' + pageNumber]) {
+    return state.vehiclesCache['vehicles' + pageNumber];
+  }
+  const vehiclesResponse = await swapi.getVehicles(pageNumber);
+  commit('addVehiclesCache', { key: 'vehicles' + pageNumber, value: vehiclesResponse });
+  return vehiclesResponse;
+};
+
 const calculateBarHeight = ({population, maxBarSize, barStep}: {population: number, maxBarSize: number, barStep: number}): number => {
   const barPixels = Math.round(population / barStep);
   if (barPixels > maxBarSize) {
@@ -52,6 +61,7 @@ export interface AppState {
   vehicle?: Vehicle,
   maxPopulation: number,
   planetsChart?: Array<PlanetChartItem>
+  vehiclesCache: { [name: string]: VehiclesResponse }
 }
 
 export default createStore({
@@ -60,7 +70,8 @@ export default createStore({
     planetsMap: new Map<string, PlanetData>(),
     planetsByName: {},
     loading: false,
-    maxPopulation: 0
+    maxPopulation: 0,
+    vehiclesCache: {}
   }),
   getters: {
     pilotsMap (state): Map<string, PilotData> {
@@ -99,6 +110,9 @@ export default createStore({
     setVehicle (state, vehicle) {
       state.vehicle = vehicle;
     },
+    addVehiclesCache (state, payload) {
+      state.vehiclesCache[payload.key] = payload.value;
+    },
     setMaxPopulation (state, maxPopulation) {
       state.maxPopulation = maxPopulation;
     },
@@ -121,7 +135,7 @@ export default createStore({
       commit('showLoader');
       try {
         while (hasNextPage) {
-          const {results: vehicles, next} = await swapi.getVehicles(nextPageNumber);
+          const {results: vehicles, next} = await getVehiclesPageCached({ commit, state }, nextPageNumber);
           for (let i = 0; i < vehicles.length; i++) {
             const {url, name, pilots} = vehicles[i];
             let vehicleHomeWorldsPopulation = 0;

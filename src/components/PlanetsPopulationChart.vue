@@ -37,11 +37,13 @@ export default defineComponent({
       ...mapGetters(["planetsChart"])
     },
     mounted() {
-      this.$store.dispatch('findPlanetsByName', {
-        planetNames: ["Tatooine", "Alderaan", "Naboo", "Bespin", "Endor"],
-        maxBarSize: this.maxBarSize,
-        barStep: this.barStep
-      });
+      if (!this.planetsChart) {
+        this.$store.dispatch('findPlanetsByName', {
+          planetNames: ["Tatooine", "Alderaan", "Naboo", "Bespin", "Endor"],
+          maxBarSize: this.maxBarSize,
+          barStep: this.barStep
+        });
+      }
     }
 });
 </script>
